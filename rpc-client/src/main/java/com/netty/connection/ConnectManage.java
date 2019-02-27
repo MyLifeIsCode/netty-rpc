@@ -3,8 +3,10 @@ package com.netty.connection;
 import com.netty.server.NettyClient;
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @desc connection
  **/
 @Slf4j
+@Component
 public class ConnectManage {
 
     @Resource
@@ -53,8 +56,55 @@ public class ConnectManage {
         HashSet<SocketAddress> newAllServerNodeSet = new HashSet<>();
         for(int i = 0;i < addressList.size();i++){
             String[] array = addressList.get(i).split(":");
-
+            if(array.length == 2){
+                String host = array[0];
+                int port = Integer.parseInt(array[1]);
+                final SocketAddress remotePeer = new InetSocketAddress(host,port);
+                newAllServerNodeSet.add(remotePeer);
+            }
         }
+        for (final SocketAddress serverNodeAddress : newAllServerNodeSet){
+            Channel channel = channelNodes.get(serverNodeAddress);
+            if(channel != null && channel.isOpen()){
+                log.info("当前服务节点已存在，无需重复连接.{}",serverNodeAddress);
+            }else {
+                connectServerNode(serverNodeAddress);
+            }
+        }
+        for (int i = 0;i < channels.size();i++){
+            Channel channel = channels.get(i);
+            SocketAddress remotePeer = channel.remoteAddress();
+            if(!newAllServerNodeSet.contains(remotePeer)){
+                log.info("删除失效节点 {}",remotePeer );
+                Channel channel_node = channelNodes.get(remotePeer);
+                if(channel_node != null){
+                    channel_node.close();
+                }
+                channels.remove(channel);
+                channelNodes.remove(remotePeer);
+            }
+        }
+    }
+
+    private void connectServerNode(SocketAddress address){
+        try {
+            Channel channel = nettyClient.doConnect(address);
+            addChannel(channel,address);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+            log.info("未能成功连接到服务器:{}",address);
+        }
+    }
+    private void addChannel(Channel channel,SocketAddress address){
+        log.info("加入Channel到连接管理.{}",address);
+        channels.add(channel);
+        channelNodes.put(address,channel);
+    }
+    public void removeChannel(Channel channel){
+        log.info("从连接管理器中一处失效channel.{}",channel.remoteAddress());
+        SocketAddress remotePeer = channel.remoteAddress();
+        channelNodes.remove(remotePeer);
+        channels.remove(channel);
     }
 }
 
