@@ -1,4 +1,4 @@
-package com.netty;
+package com.netty.discovery;
 
 import com.alibaba.fastjson.JSONObject;
 import com.netty.connection.ConnectManage;

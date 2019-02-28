@@ -10,6 +10,7 @@
     <modules>
         <module>rpc-server</module>
         <module>rpc-client</module>
+        <module>dynamic</module>
     </modules>
     <packaging>pom</packaging>
     <parent>

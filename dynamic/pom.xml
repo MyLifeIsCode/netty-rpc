@@ -9,13 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>rpc-client</artifactId>
+    <artifactId>dynamic</artifactId>
 
 
-    <dependencies>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjweaver</artifactId>
-        </dependency>
-    </dependencies>
 </project>

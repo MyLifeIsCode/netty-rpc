@@ -38,7 +38,7 @@ public class RpcFactory<T> implements InvocationHandler {
         request.setId(IdUtil.getId());
 
         Object result = client.send(request);
-        Class<?> returnType = method.getReturnType(  );
+        Class<?> returnType = method.getReturnType();
 
         Response response = JSON.parseObject(result.toString(), Response.class);
         if (response.getCode()==1){
